@@ -1,0 +1,12 @@
+version: '2'
+
+services:
+  server:
+    image: docker-test-httpd-ssl:latest
+    container_name: docker-test-httpd-ssl
+    environment:
+      - DOMAIN_NAME=docker-test-httpd-ssl.docker
+    volumes:
+      - ./:/data
+      - ../public/:/usr/local/apache2/htdocs
+    working_dir: /data

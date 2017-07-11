@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -e
+
+# Create the SSL certificate
+if [ ! -f "/usr/local/apache2/conf/server.key" ]; then
+	sed -i "s/www.example.com/$DOMAIN_NAME/g" /usr/local/apache2/conf/extra/httpd-ssl.conf
+
+	openssl req \
+		-new \
+		-newkey rsa:2048 \
+		-days 3650 \
+		-nodes \
+		-x509 \
+		-subj "/C=NL/ST=South Holland/L=Rotterdam/O=Walter Tamboer/OU=Tech/CN=$DOMAIN_NAME" \
+		-keyout /usr/local/apache2/conf/server.key \
+		-out /usr/local/apache2/conf/server.crt \
+		-reqexts SAN \
+		-extensions SAN \
+		-config <(cat /usr/lib/ssl/openssl.cnf ; printf "[SAN]\nsubjectAltName=DNS:$DOMAIN_NAME") \
+		-sha256
+fi
+
+# Apache gets grumpy about PID files pre-existing
+rm -f /usr/local/apache2/logs/httpd.pid
+
+exec httpd -DFOREGROUND
